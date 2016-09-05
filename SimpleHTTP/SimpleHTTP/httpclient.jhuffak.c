@@ -7,7 +7,7 @@
 #include <sys/types.h>
 //#include <usistd.h>
 
-#define MAXLINE 80
+#define MAXLINE 300
 
 int open_clientfd(char *hostname, int port);
 
@@ -16,15 +16,21 @@ int main(int argc, char **argv)
 {
 	int clientfd, port;
 	char *host, buf[MAXLINE];
-
+	char input;
 
 	host = argv[1];
 	port = atoi(argv[2]);
 	clientfd = open_clientfd(host, port);
 	while (fgets(buf, MAXLINE, stdin) != NULL) {
 		write(clientfd, buf, strlen(buf));
-		read(clientfd, buf, MAXLINE);
-		fputs(buf, stdout);
+		while ((fgetc(clientfd))) {
+			if (feof(clientfd)) {
+				break;
+			}
+			printf("%c", c);
+		}
+		//read(clientfd, buf, MAXLINE);
+		//fputs(buf, stdout);
 	}
 	close(clientfd);
 	exit(0);
