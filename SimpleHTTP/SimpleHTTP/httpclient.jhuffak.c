@@ -22,8 +22,8 @@ int main(int argc, char **argv)
 	clientfd = open_clientfd(host, port);
 	while (fgets(buf, MAXLINE, stdin) != NULL) {
 		write(clientfd, buf, strlen(buf));
-		while (read(clientfd, buf,  sizeof(char)) != 0) {
-			fputs(buf, stdout);
+		while (read(clientfd, buf, sizeof(char)) != 0) {
+			fputc(*buf, stdout);
 		}
 		//read(clientfd, buf, MAXLINE);
 		//fputs(buf, stdout);
