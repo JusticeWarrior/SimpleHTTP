@@ -3,6 +3,8 @@
 #include <sys/socket.h>
 #include <string.h>
 #include <netinet/in.h>
+#include <netdb.h>
+#include <sys/types.h>
 //#include <usistd.h>
 
 #define MAXLINE 80
@@ -45,7 +47,7 @@ int open_clientfd(char *hostname, int port)
 		(char *)&serveraddr.sin_addr.s_addr, hp->h_length);
 	serveraddr.sin_port = htons(port);
 	/* Establish a connection with the server */
-	if (connect(clientfd, (SA *) &serveraddr, sizeof(serveraddr)) < 0)
+	if (connect(clientfd, (const struct sockaddr *) &serveraddr, sizeof(serveraddr)) < 0)
 		return -1;
 	return clientfd;
 }
