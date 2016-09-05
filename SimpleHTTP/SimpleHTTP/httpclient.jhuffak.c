@@ -1,6 +1,13 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <usistd.h>
+#include <sys/socket.h>
+#include <string.h>
+#include <netinet/in.h>
+//#include <usistd.h>
+
+#define MAXLINE 80
+
+int open_clientfd(char *hostname, int port);
 
 // CREDIT: Sanjay Rao - Lecture Socket Programming slide 14
 int main(int argc, char **argv)
@@ -14,7 +21,7 @@ int main(int argc, char **argv)
 	clientfd = open_clientfd(host, port);
 	while (fgets(buf, MAXLINE, stdin) != NULL) {
 		write(clientfd, buf, strlen(buf));
-		read(clientfd, buf, MAXLINE,);
+		read(clientfd, buf, MAXLINE);
 		fputs(buf, stdout);
 	}
 	close(clientfd);
