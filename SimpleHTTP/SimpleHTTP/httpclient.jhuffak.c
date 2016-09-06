@@ -15,19 +15,25 @@ int open_clientfd(char *hostname, int port);
 int main(int argc, char **argv)
 {
 	int clientfd, port;
-	char *host, buf[MAXLINE];
+	char *host, buf[MAXLINE], temp[20];
 
 	host = argv[1];
 	port = atoi(argv[2]);
 	clientfd = open_clientfd(host, port);
-	while (fgets(buf, MAXLINE, stdin) != NULL) {
-		write(clientfd, buf, strlen(buf));
-		while (read(clientfd, buf, sizeof(char)) != 0) {
-			fputc(*buf, stdout);
-		}
-		//read(clientfd, buf, MAXLINE);
-		//fputs(buf, stdout);
+	
+	strcpy(buf, "GET ");
+	strcat(buf, argv[3]);
+	strcpy(temp, " HTTP/1.0\r\n\r\n");
+	strcat(buf, temp);
+	
+	//while (fgets(buf, MAXLINE, stdin) != NULL) {
+	write(clientfd, buf, strlen(buf));
+	while (read(clientfd, buf, sizeof(char)) != 0) {
+		fputc(*buf, stdout);
 	}
+	//read(clientfd, buf, MAXLINE);
+	//fputs(buf, stdout);
+	//}
 	close(clientfd);
 	exit(0);
 }
