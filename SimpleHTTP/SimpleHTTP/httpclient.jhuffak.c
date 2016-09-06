@@ -1,3 +1,8 @@
+/*
+	Jordan Huffaker - 0026480616 - jhuffak@purdue.edu
+	ECE 463 Lab 1
+*/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/socket.h>
@@ -26,14 +31,10 @@ int main(int argc, char **argv)
 	strcpy(temp, " HTTP/1.0\r\n\r\n\0");
 	strcat(buf, temp);
 	
-	//while (fgets(buf, MAXLINE, stdin) != NULL) {
 	write(clientfd, buf, strlen(buf));
 	while (read(clientfd, buf, sizeof(char)) != 0) {
 		fputc(*buf, stdout);
 	}
-	//read(clientfd, buf, MAXLINE);
-	//fputs(buf, stdout);
-	//}
 	close(clientfd);
 	exit(0);
 }
