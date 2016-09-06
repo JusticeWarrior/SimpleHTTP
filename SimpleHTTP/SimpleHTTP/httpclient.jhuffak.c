@@ -23,7 +23,7 @@ int main(int argc, char **argv)
 	
 	strcpy(buf, "GET ");
 	strcat(buf, argv[3]);
-	strcpy(temp, " HTTP/1.0\r\n\r\n");
+	strcpy(temp, " HTTP/1.0\r\n\r\n\0");
 	strcat(buf, temp);
 	
 	//while (fgets(buf, MAXLINE, stdin) != NULL) {
