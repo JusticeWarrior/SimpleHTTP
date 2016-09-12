@@ -17,17 +17,24 @@
 
 int open_listenfd(int port);
 void echo(int connfd);
+void get_page(int connfd);
 int open_clientfd(char *hostname, int port);
 
 // CREDIT: Adapted from Sanjay Rao - Lecture Socket Programming slide 30
 int main(int argc, char **argv)
 {
+	int test = open(argv[1]);
+
+	get_page(test);
+	close(test);
+
+	/*
 	int listenfd, connfd, port, clientlen;
 	struct sockaddr_in clientaddr;
 	struct hostent *hp;
 	char *haddrp;
-	port = atoi(argv[1]); /* the server listens on a port passed
-	on the command line */
+	port = atoi(argv[1]); // the server listens on a port passed
+	on the command line
 	listenfd = open_listenfd(port);
 	while (1)
 	{
@@ -38,9 +45,51 @@ int main(int argc, char **argv)
 		haddrp = ((inet_ntoa(clientaddr.sin_addr)));
 		printf("Fd %d connected to %s (%s:%s)\n",
 			connfd, hp->h_name, haddrp, ntohs(clientaddr.sin_port));
-		echo(connfd);
+		get_page(connfd);
 		close(connfd);
 	}
+
+	*/
+}
+
+void get_page(int connfd)
+{
+	size_t n;
+	char buf[MAXLINE];
+	char* tok;
+	const char e404[30] = "HTTP/1.0 404 Not Found\r\n\r\n\0";
+	const char e403[30] = "HTTP/1.0 403 Forbidden\r\n\r\n\0";
+	const char OK[30] = "HTTP/1.0 200 OK\r\n\r\n\0";
+
+	n = read(connfd, buf, MAXLINE);
+	buf[n] = "\0";
+
+	if (strtok(buf[5], " HTTP/1.0\r\n\r\n") == NULL)
+	{
+		write(connfd, e404, 26);
+		return;
+	}
+
+	if (access(buf[5], F_OK) == -1)
+	{
+		write(connfd, e404, 26);
+		return;
+	}
+
+	if (access(buf[5], R_OK) == -1)
+	{
+		write(connfd, e403, 26);
+		return;
+	}
+
+	int foundFile = open(buf[5], O_RDONLY, S_IREAD);
+	
+	write(connfd, OK, 19);
+	while((n = read(foundFile, buf, MAXLINE)) != 0)
+	{
+		write(connfd, buf, n);
+	}
+	close(foundFile);
 }
 
 // CREDIT: Sanjay Rao - Lecture Socket Programming slide 35
