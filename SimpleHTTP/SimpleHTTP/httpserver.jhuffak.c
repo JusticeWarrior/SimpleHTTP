@@ -64,7 +64,7 @@ void get_page(int connfd)
 	const char OK[30] = "HTTP/1.0 200 OK\r\n\r\n\0";
 
 	n = read(connfd, buf, MAXLINE);
-	buf[n] = '\0';
+	buf[n - 1] = '\0';
 
 	if (strtok((char*)&buf[5], " HTTP/1.0\r\n\r\n") == NULL)
 	{
