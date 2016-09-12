@@ -10,7 +10,9 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <sys/types.h>
-//#include <usistd.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #define MAXLINE 300
 #define LISTENQ 100
@@ -23,7 +25,7 @@ int open_clientfd(char *hostname, int port);
 // CREDIT: Adapted from Sanjay Rao - Lecture Socket Programming slide 30
 int main(int argc, char **argv)
 {
-	int test = open(argv[1]);
+	int test = open(argv[1], S_IWRITE | S_IREAD);
 
 	get_page(test);
 	close(test);
@@ -62,27 +64,27 @@ void get_page(int connfd)
 	const char OK[30] = "HTTP/1.0 200 OK\r\n\r\n\0";
 
 	n = read(connfd, buf, MAXLINE);
-	buf[n] = "\0";
+	buf[n] = '\0';
 
-	if (strtok(buf[5], " HTTP/1.0\r\n\r\n") == NULL)
+	if (strtok((char*)&buf[5], " HTTP/1.0\r\n\r\n") == NULL)
 	{
 		write(connfd, e404, 26);
 		return;
 	}
 
-	if (access(buf[5], F_OK) == -1)
+	if (access((char*)&buf[5], F_OK) == -1)
 	{
 		write(connfd, e404, 26);
 		return;
 	}
 
-	if (access(buf[5], R_OK) == -1)
+	if (access((char*)&buf[5], R_OK) == -1)
 	{
 		write(connfd, e403, 26);
 		return;
 	}
 
-	int foundFile = open(buf[5], O_RDONLY, S_IREAD);
+	int foundFile = open(&buf[5], O_RDONLY, S_IREAD);
 	
 	write(connfd, OK, 19);
 	while((n = read(foundFile, buf, MAXLINE)) != 0)
