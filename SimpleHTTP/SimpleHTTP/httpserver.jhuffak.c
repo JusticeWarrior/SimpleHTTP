@@ -13,6 +13,8 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #define MAXLINE 300
 #define LISTENQ 100
@@ -25,18 +27,16 @@ int open_clientfd(char *hostname, int port);
 // CREDIT: Adapted from Sanjay Rao - Lecture Socket Programming slide 30
 int main(int argc, char **argv)
 {
-	int test = open(argv[1], S_IWRITE | S_IREAD);
+	//int test = open(argv[1], S_IWRITE | S_IREAD);
 
-	get_page(test);
-	close(test);
+	//get_page(test);
+	//close(test);
 
-	/*
 	int listenfd, connfd, port, clientlen;
 	struct sockaddr_in clientaddr;
 	struct hostent *hp;
 	char *haddrp;
-	port = atoi(argv[1]); // the server listens on a port passed
-	on the command line
+	port = atoi(argv[1]); // the server listens on a port passed on the command line
 	listenfd = open_listenfd(port);
 	while (1)
 	{
@@ -44,14 +44,11 @@ int main(int argc, char **argv)
 		connfd = accept(listenfd, (struct sockaddr *) &clientaddr, &clientlen);
 		hp = gethostbyaddr((const char *)&clientaddr.sin_addr.s_addr,
 		sizeof(clientaddr.sin_addr.s_addr), AF_INET);
-		haddrp = ((inet_ntoa(clientaddr.sin_addr)));
-		printf("Fd %d connected to %s (%s:%s)\n",
-			connfd, hp->h_name, haddrp, ntohs(clientaddr.sin_port));
+		haddrp = inet_ntoa(clientaddr.sin_addr);
+		//printf("Fd %d connected to %s (%s:%s)\n", connfd, hp->h_name, haddrp, ntohs(clientaddr.sin_port));
 		get_page(connfd);
 		close(connfd);
 	}
-
-	*/
 }
 
 void get_page(int connfd)
@@ -66,25 +63,25 @@ void get_page(int connfd)
 	n = read(connfd, buf, MAXLINE);
 	buf[n - 1] = '\0';
 
-	if (strtok((char*)&buf[5], " HTTP/1.0\r\n\r\n") == NULL)
+	if (strtok((char*)&buf[4], " ") == NULL)
 	{
 		write(connfd, e404, 26);
 		return;
 	}
 
-	if (access((char*)&buf[5], F_OK) == -1)
+	if (access((char*)&buf[4], F_OK) == -1)
 	{
 		write(connfd, e404, 26);
 		return;
 	}
 
-	if (access((char*)&buf[5], R_OK) == -1)
+	if (access((char*)&buf[4], R_OK) == -1)
 	{
 		write(connfd, e403, 26);
 		return;
 	}
 
-	int foundFile = open(&buf[5], O_RDONLY, S_IREAD);
+	int foundFile = open(&buf[4], O_RDONLY, S_IREAD);
 	
 	write(connfd, OK, 19);
 	while((n = read(foundFile, buf, MAXLINE)) != 0)
