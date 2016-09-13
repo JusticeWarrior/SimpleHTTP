@@ -15,6 +15,7 @@
 #include <fcntl.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <signal.h>
 
 #define MAXLINE 300
 #define LISTENQ 100
@@ -38,6 +39,7 @@ int main(int argc, char **argv)
 	char *haddrp;
 	port = atoi(argv[1]); // the server listens on a port passed on the command line
 	pid_t childpid;
+	signal(SIGCHLD, SIG_IGN);
 	listenfd = open_listenfd(port);
 	while (1)
 	{
@@ -51,6 +53,8 @@ int main(int argc, char **argv)
 			haddrp = inet_ntoa(clientaddr.sin_addr);
 			//printf("Fd %d connected to %s (%s:%s)\n", connfd, hp->h_name, haddrp, ntohs(clientaddr.sin_port));
 			get_page(connfd);
+			close(connfd);
+			exit(0);
 		}
 		close(connfd);
 	}
