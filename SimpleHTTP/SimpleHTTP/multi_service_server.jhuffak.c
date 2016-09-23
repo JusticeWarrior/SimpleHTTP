@@ -47,6 +47,7 @@ int main(int argc, char **argv)
 	char *haddrp;
 	fd_set rfds;
 	char buf[MAXLINE];
+	ssize_t packet_size;
 	port = atoi(argv[1]); // the http server listens on a port passed on the command line
 	port2 = atoi(argv[2]); // the udp server listens on a port passed on the command line
 	pid_t childpid;
@@ -81,14 +82,14 @@ int main(int argc, char **argv)
 		else if (FD_ISSET(listenfd2, &rfds))
 		{
 			clientlen = sizeof(clientaddr);
-			recvfrom(listenfd2, buf, 12, 0, (struct sockaddr *) &clientaddr, &clientlen);
+			packet_size = recvfrom(listenfd2, buf, 12, 0, (struct sockaddr *) &clientaddr, &clientlen);
 
 			memcpy(&ping, buf, sizeof(uint32_t));
 			ping = ntohl(ping) + 1;
 			ping = htonl(ping);
 			memcpy(buf, &ping, sizeof(uint32_t));
 
-			sendto(listenfd2, buf, 12, 0, (struct sockaddr *) &clientaddr, clientlen);
+			sendto(listenfd2, buf, packet_size, 0, (struct sockaddr *) &clientaddr, clientlen);
 			//close(listenfd2);
 		}
 	}
