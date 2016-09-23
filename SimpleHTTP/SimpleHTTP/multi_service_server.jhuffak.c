@@ -16,9 +16,16 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <signal.h>
+#include <sys/select.h>
 
 #define MAXLINE 300
 #define LISTENQ 100
+
+// CREDIT: David Titarenco - http://stackoverflow.com/questions/3437404/min-and-max-in-c
+#define max(a,b) \
+	({ __typeof__ (a) _a = (a); \
+		__typeof__ (b) _b = (b); \
+	_a > _b ? _a : _b; })
 
 int open_listenfd(int port);
 void echo(int connfd);
@@ -38,7 +45,7 @@ int main(int argc, char **argv)
 	struct sockaddr_in clientaddr;
 	struct hostent *hp;
 	char *haddrp;
-	struct fd_set rfds;
+	fd_set rfds;
 	char buf[MAXLINE];
 	port = atoi(argv[1]); // the http server listens on a port passed on the command line
 	port2 = atoi(argv[2]); // the udp server listens on a port passed on the command line
@@ -50,11 +57,11 @@ int main(int argc, char **argv)
 	while (1)
 	{
 		FD_ZERO(&rfds);
-		FD_SET(listenfd);
-		FD_SET(listenfd2);
+		FD_SET(listenfd, &rfds);
+		FD_SET(listenfd2, &rfds);
 		maxfd = max(listenfd, listenfd2) + 1;
 		retval = select(maxfd, &rfds, NULL, NULL, NULL);
-		if (FD_ISSET(listenfd, &rdfs))
+		if (FD_ISSET(listenfd, &rfds))
 		{
 			clientlen = sizeof(clientaddr);
 			connfd = accept(listenfd, (struct sockaddr *) &clientaddr, &clientlen);
@@ -76,7 +83,7 @@ int main(int argc, char **argv)
 			clientlen = sizeof(clientaddr);
 			recvfrom(listenfd2, buf, 12, 0, (struct sockaddr *) &clientaddr, &clientlen);
 
-			ping = memcpy(&ping, buf, sizeof(uint32_t));
+			memcpy(&ping, buf, sizeof(uint32_t));
 			ping = ntohl(ping) + 1;
 			ping = htonl(ping);
 			memcpy(buf, &ping, sizeof(uint32_t));
