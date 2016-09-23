@@ -59,35 +59,45 @@ void get_page(int connfd)
 	const char e404[30] = "HTTP/1.0 404 Not Found\r\n\r\n\0";
 	const char e403[30] = "HTTP/1.0 403 Forbidden\r\n\r\n\0";
 	const char OK[30] = "HTTP/1.0 200 OK\r\n\r\n\0";
+	int startI = 4;
+	int test;
+	const char stuff[100] = "./test_garbage.txt";
 
-	n = read(connfd, buf, MAXLINE);
+	test = open(stuff, O_WRONLY);
+
+	n = read(test, buf, MAXLINE);
 	buf[n - 1] = '\0';
 
-	if (strtok((char*)&buf[4], " ") == NULL)
+	if (buf[4] == '/')
 	{
-		write(connfd, e404, 26);
+		startI = 5;
+	}
+	if (strtok((char*)&buf[startI], " ") == NULL)
+	{
+		write(test, e404, 26);
 		return;
 	}
 
-	if (access((char*)&buf[4], F_OK) == -1)
+	if (access((char*)&buf[startI], F_OK) == -1)
 	{
-		write(connfd, e404, 26);
+		write(test, e404, 26);
 		return;
 	}
 
-	if (access((char*)&buf[4], R_OK) == -1)
+	if (access((char*)&buf[startI], R_OK) == -1)
 	{
-		write(connfd, e403, 26);
+		write(test, e403, 26);
 		return;
 	}
 
-	int foundFile = open(&buf[4], O_RDONLY, S_IREAD);
+	int foundFile = open(&buf[startI], O_RDONLY, S_IREAD);
 	
-	write(connfd, OK, 19);
+	write(test, OK, 19);
 	while((n = read(foundFile, buf, MAXLINE)) != 0)
 	{
-		write(connfd, buf, n);
+		write(test, buf, n);
 	}
+	close(test);
 	close(foundFile);
 }
 
